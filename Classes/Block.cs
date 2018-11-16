@@ -11,6 +11,7 @@ namespace ResourceScheduler
         public int End { get; set; }
         public int Duration { get; set; }
         public bool Valid { get; set; }
+        public List<Block> SubBlocks { get; set; }
     }
 
 }

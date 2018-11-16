@@ -10,10 +10,10 @@ namespace ResourceScheduler
         private static Random rand = new Random();
         static List<WorkOrder> orders = new List<WorkOrder>();
         static List<Block> blocks = new List<Block>();
-        static int ordersCount = 30;
-        static int operationsPerOrder = 20;
+        static int ordersCount = 500;
+        static int operationsPerOrder = 10;
         static DateTime refTime = new DateTime(2018, 12, 31);
-        static int resourceCount = 25;
+        static int resourceCount = 20;
 
         static void Main(string[] args)
         {
