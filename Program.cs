@@ -100,7 +100,9 @@ namespace ResourceScheduler
 
             int operationEnd = block.End > offset ? block.End : offset;
 
-            int operationStart = operationEnd + operation.Duration;
+            int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationEnd + operation.Duration).Sum(x => x.Duration);
+
+            int operationStart = operationEnd + operation.Duration + pauseTime;
 
             pause = pauses.Where(x => x.End <= operationStart && x.Start >= operationStart).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
@@ -177,7 +179,7 @@ namespace ResourceScheduler
                 }
             }
             List<DateTime> wDays = null;
-          //  wDays = weekDays(new DateTime(2016, 12, 31), refTime);
+           wDays = weekDays(new DateTime(2016, 12, 31), refTime);
 
             foreach (Block b in blocks)
             {
@@ -194,12 +196,11 @@ namespace ResourceScheduler
         public static List<DateTime> weekDays(DateTime start, DateTime end)
         {
             List<DateTime> weekDays = new List<DateTime>();
-            double day = -1;
             while (start<= end)
             {
                 if (end.DayOfWeek == DayOfWeek.Saturday || end.DayOfWeek == DayOfWeek.Sunday)
                     weekDays.Add(end);
-                end.AddDays(day);
+                end = end.AddDays(-1);
             }
             return weekDays;
         }
