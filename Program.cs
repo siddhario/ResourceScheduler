@@ -162,7 +162,7 @@ namespace ResourceScheduler
 
             pauses.Add(new Pause() { Start = 75, End = 0, Duration = 75 });  // 00:00 - 22:45
             dailyPauses.Add(new Pause() { Start = 360, End = 330, Duration = 30 }); // 18:30 - 18:00
-            dailyPauses.Add(new Pause() { Start = 550, End = 540, Duration = 15 }); // 15:00 - 14:45
+            dailyPauses.Add(new Pause() { Start = 555, End = 540, Duration = 15 }); // 15:00 - 14:45
             dailyPauses.Add(new Pause() { Start = 900, End = 870, Duration = 30 }); // 09:30 - 09:00
             dailyPauses.Add(new Pause() { Start = 1515, End = 1020, Duration = 495 }); // 07:00 - 22:45
 
