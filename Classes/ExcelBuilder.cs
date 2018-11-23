@@ -55,6 +55,7 @@ namespace ResourceScheduler.Classes
                     s1.Cell(i + 1, 12).Value = op.EndDateTime;
                     s1.Cell(i + 1, 13).Style.DateFormat.Format = "dd.MM.yyyy HH:mm:ss";
                     s1.Cell(i + 1, 14).Style.DateFormat.Format = "dd.MM.yyyy HH:mm:ss";
+                    s1.Cell(i + 1, 15).Value = op.Duration;
 
                     if (prethodniRN != op.WorkOrderId)
                     {

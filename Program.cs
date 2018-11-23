@@ -177,7 +177,7 @@ namespace ResourceScheduler
                 }
             }
             List<DateTime> wDays = null;
-            wDays = weekDays(new DateTime(2016, 12, 31), refTime);
+          //  wDays = weekDays(new DateTime(2016, 12, 31), refTime);
 
             foreach (Block b in blocks)
             {
