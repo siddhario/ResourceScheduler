@@ -26,7 +26,7 @@ namespace ResourceScheduler
             {
                 int end = order.End.Value;
                 foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
-                    end = ScheduleOperation(operation, end);
+                    end = ScheduleOperation(operation, end+15);
                 order.Start = end;
             }
             DateTime endT = DateTime.Now;
@@ -99,10 +99,10 @@ namespace ResourceScheduler
                 offset = pause.Start;
 
             int operationEnd = block.End > offset ? block.End : offset;
-            operationEnd += operation.TransportTime;
-            pause = pauses.Where(x => x.End <= operationEnd && x.Start > operationEnd).OrderBy(x => x.End).SingleOrDefault();
-            if (pause != null)
-                operationEnd = pause.Start + operation.TransportTime;
+            //operationEnd += operation.TransportTime;
+            //pause = pauses.Where(x => x.End <= operationEnd && x.Start > operationEnd).OrderBy(x => x.End).SingleOrDefault();
+            //if (pause != null)
+            //    operationEnd = pause.Start + operation.TransportTime;
 
             int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationEnd + operation.Duration).Sum(x => x.Duration);
 
