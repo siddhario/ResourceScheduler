@@ -18,5 +18,6 @@ namespace ResourceScheduler
         public string ResourceName { get; set; }
         public string Description { get; set; }
         public int Level { get; set; }
+        public int TransportTime { get; set; }
     }
 }

@@ -99,6 +99,10 @@ namespace ResourceScheduler
                 offset = pause.Start;
 
             int operationEnd = block.End > offset ? block.End : offset;
+            operationEnd += operation.TransportTime;
+            pause = pauses.Where(x => x.End <= operationEnd && x.Start > operationEnd).OrderBy(x => x.End).SingleOrDefault();
+            if (pause != null)
+                operationEnd = pause.Start + operation.TransportTime;
 
             int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationEnd + operation.Duration).Sum(x => x.Duration);
 
@@ -146,7 +150,7 @@ namespace ResourceScheduler
                 for (int j = 0; j < operationsPerOrder; j++)
                 {
                     Resource res = resources[rand.Next(0, resourceCount - 1)];
-                    operations.Add(new Operation() { Level = 1, WorkOrderId = i + 1, Id = j + 1, ResourceId = res.ResourceId, ResourceName = res.ResourceName, Duration = r.Next(1, 360), Start = null, End = null });
+                    operations.Add(new Operation() { Level = 1, WorkOrderId = i + 1, Id = j + 1, ResourceId = res.ResourceId, ResourceName = res.ResourceName, Duration = r.Next(1, 360), Start = null, End = null, TransportTime = 15 });
                 }
                 orders.Add(new WorkOrder() { Id = i + 1, Operations = operations, ParentId = null, End = r.Next(14400) });
             }
@@ -178,8 +182,8 @@ namespace ResourceScheduler
                     });
                 }
             }
-            List<DateTime> wDays = null;
-           wDays = weekDays(new DateTime(2016, 12, 31), refTime);
+            //List<DateTime> wDays = null;
+            //wDays = weekDays(new DateTime(2016, 12, 31), refTime);
 
             foreach (Block b in blocks)
             {
