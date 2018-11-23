@@ -13,7 +13,7 @@ namespace ResourceScheduler
         static int ordersCount = 500;
         static int operationsPerOrder = 10;
         static DateTime refTime = new DateTime(2018, 12, 31);
-        static int resourceCount = 20;
+        static int resourceCount = 10;
         static List<Pause> dailyPauses = new List<Pause>();
         static List<Pause> pauses = new List<Pause>();
 
@@ -50,14 +50,14 @@ namespace ResourceScheduler
             }
 
 
-            //foreach (var operation in operations.OrderBy(o => o.ResourceId).ThenBy(o => o.Start))
-            //{
-            //    Console.Write(" Resource id:" + operation.ResourceId + " Order id:" + operation.WorkOrderId);
-            //    Console.Write(" Start:    " + refTime.AddMinutes(-operation.Start.Value).ToString("dd.MM.yyyy HH:mm"));
-            //    Console.WriteLine("-" + refTime.AddMinutes(-operation.End.Value).ToString("HH:mm"));
-            //    //Console.WriteLine(" Duration:      " + operation.Duration + " m");
+            foreach (var operation in operations.OrderBy(o => o.ResourceId).ThenBy(o => o.Start))
+            {
+                Console.Write(" Resource id:" + operation.ResourceId + " Order id:" + operation.WorkOrderId);
+                Console.Write(" Start:    " + refTime.AddMinutes(-operation.Start.Value).ToString("dd.MM.yyyy HH:mm"));
+                Console.WriteLine("-" + refTime.AddMinutes(-operation.End.Value).ToString("HH:mm"));
+                //Console.WriteLine(" Duration:      " + operation.Duration + " m");
 
-            //}
+            }
 
             ExcelBuilder.Start(operations);
 
