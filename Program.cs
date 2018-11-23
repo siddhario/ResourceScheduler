@@ -176,6 +176,8 @@ namespace ResourceScheduler
                     });
                 }
             }
+            List<DateTime> wDays = null;
+            wDays = weekDays(new DateTime(2016, 12, 31), refTime);
 
             foreach (Block b in blocks)
             {
@@ -188,6 +190,20 @@ namespace ResourceScheduler
             int pauseTime = pauses.Where(x => x.End >= b.End && x.Start <= b.Start).Sum(x => x.Duration);
             b.Duration = b.Duration - pauseTime;
         }
+
+        public static List<DateTime> weekDays(DateTime start, DateTime end)
+        {
+            List<DateTime> weekDays = new List<DateTime>();
+            double day = -1;
+            while (start<= end)
+            {
+                if (end.DayOfWeek == DayOfWeek.Saturday || end.DayOfWeek == DayOfWeek.Sunday)
+                    weekDays.Add(end);
+                end.AddDays(day);
+            }
+            return weekDays;
+        }
+
 
 
         public static string GetLetter()
