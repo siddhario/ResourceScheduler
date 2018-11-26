@@ -129,8 +129,8 @@ namespace ResourceScheduler
                 block = blocks.Where(b =>
                 b.Valid == true &&
                 b.ResourceId == operation.ResourceId &&
-                b.Duration >= operation.Duration + operation.TransportTime &&
-                b.Duration - (offset - b.End) >= operation.Duration + operation.TransportTime &&
+                b.Duration >= operation.Duration &&
+                b.Duration - (offset - b.End) >= operation.Duration &&
                 b.Start >= offset).OrderBy(b => b.End).First();
 
             }
