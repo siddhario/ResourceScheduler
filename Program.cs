@@ -18,6 +18,7 @@ namespace ResourceScheduler
         static List<Pause> pauses = new List<Pause>();
 
         static List<WorkOrder> workOrdersSchedule = new List<WorkOrder>();
+        static int count = 0;
 
         static void Main(string[] args)
         {
@@ -25,37 +26,28 @@ namespace ResourceScheduler
 
             DateTime startT = DateTime.Now;
 
-            //--------------------TEST----------------
-            List<WorkOrder> workOrders = new List<WorkOrder>();
-            workOrders.Add(new WorkOrder() { Id = 1, ParentId = null });
-            workOrders.Add(new WorkOrder() { Id = 2, ParentId = null });
-            workOrders.Add(new WorkOrder() { Id = 8, ParentId = null });
-            workOrders.Add(new WorkOrder() { Id = 3, ParentId = 1 });
-            workOrders.Add(new WorkOrder() { Id = 4, ParentId = 1 });
-            workOrders.Add(new WorkOrder() { Id = 5, ParentId = 3 });
-            workOrders.Add(new WorkOrder() { Id = 6, ParentId = 4 });
-            workOrders.Add(new WorkOrder() { Id = 7, ParentId = 2 });
-            workOrders.Add(new WorkOrder() { Id = 9, ParentId = 8 });
-            workOrders.Add(new WorkOrder() { Id = 10, ParentId = 9 });
-            workOrders.Add(new WorkOrder() { Id = 11, ParentId = 10 });
+            orders[2].ParentId = 1; 
+            orders[3].ParentId = 1; 
+            orders[4].ParentId = 3;
+            orders[5].ParentId = 4;
+            orders[6].ParentId = 2;
+            orders[8].ParentId = 8;
+            orders[9].ParentId = 9;
 
-            workOrderSchedule(workOrders.First(), workOrders);
+            
+            foreach(var o in orders)
+            workOrderSchedule(o);
 
-            Console.WriteLine("--------------Work Orders Schedule----------------");
-            Console.WriteLine("Id\tParentId");
-            foreach (WorkOrder wo in workOrdersSchedule)
+
+            foreach (var order in workOrdersSchedule)
             {
-                Console.WriteLine(wo.Id + "\t" + wo.ParentId);
-            }
-            Console.WriteLine("--------------------------------------------------");
-
-            //-------------------TEST END--------------
-            foreach (var order in orders)
-            {
-                int end = order.End.Value;
-                foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
-                    end = ScheduleOperation(operation, end + operation.TransportTime);
-                order.Start = end;
+                    int end = order.End.Value;
+                    foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
+                        end = ScheduleOperation(operation, end + operation.TransportTime);
+                    order.Start = end;
+                    List<WorkOrder> subordinateOrders= orders.Where(x => x.ParentId == order.Id).ToList();
+                        foreach (var wo in subordinateOrders)
+                        wo.End = order.Start;
             }
             DateTime endT = DateTime.Now;
 
@@ -95,18 +87,35 @@ namespace ResourceScheduler
             Console.ReadKey();
         }
 
-        public static void workOrderSchedule(WorkOrder workOrder, List<WorkOrder> workOrders)
+        public static void workOrderSchedule(WorkOrder workOrder)
         {
-            WorkOrder tmp = workOrders.Where(x => x.ParentId == workOrder.Id).FirstOrDefault();
-            if (tmp != null)
-                workOrderSchedule(tmp, workOrders);
+            #region hijerarhijaOdZada
+            //WorkOrder tmp = workOrders.Where(x => x.ParentId == workOrder.Id).FirstOrDefault();
+            //if (tmp != null)
+            //    workOrderSchedule(tmp, workOrders);
 
-            if (workOrders.Count > 0)
+            //if (workOrders.Count > 0)
+            //{
+            //    workOrdersSchedule.Add(workOrder);
+            //    workOrders.Remove(workOrder);
+            //    if (workOrders.Count > 0)
+            //        workOrderSchedule(workOrders.First(), workOrders);
+            //}
+            #endregion
+            if(!workOrdersSchedule.Contains(workOrder))
+            workOrdersSchedule.Add(workOrder);
+            List<WorkOrder> tmp = new List<WorkOrder>();
+            foreach (var wo in orders.Where(x=> x.ParentId == workOrder.Id).ToList())
             {
-                workOrdersSchedule.Add(workOrder);
-                workOrders.Remove(workOrder);
-                if (workOrders.Count > 0)
-                    workOrderSchedule(workOrders.First(), workOrders);
+                if(!workOrdersSchedule.Contains(wo))
+                {
+                    workOrdersSchedule.Add(wo);
+                    tmp.Add(wo);
+                }
+            }
+            foreach(var o in tmp)
+            {
+                workOrderSchedule(o);
             }
         }
 
@@ -203,7 +212,8 @@ namespace ResourceScheduler
             for (int i = 0; i < resourceCount; i++)
                 blocks.Add(new Block() { Start = time, End = 0, Duration = time, ResourceId = i + 1, Valid = true });
 
-
+            List<int> wDays = null;
+            wDays = weekDays(timeInterval, refTime);
 
 
             pauses.Add(new Pause() { Start = 75, End = 0, Duration = 75 });  // 00:00 - 22:45
@@ -214,23 +224,44 @@ namespace ResourceScheduler
 
             for (int i = 0; i < timeInterval.Days + 1; i++)
             {
-                foreach (Pause p in dailyPauses)
-                {
-                    pauses.Add(new Pause()
+                //if (wDays.Contains(i))
+                //{
+                //    count = 0;
+                //    int countLinkedDays = linkedNonWorkingDays(i, wDays);
+
+
+
+                //    i = i + countLinkedDays - 1;
+                //}
+                //else
+                    foreach (Pause p in dailyPauses)
                     {
-                        Start = p.Start + 1440 * i,
-                        End = p.End + 1440 * i,
-                        Duration = p.Duration
-                    });
-                }
+                        pauses.Add(new Pause()
+                        {
+                            Start = p.Start + 1440 * i,
+                            End = p.End + 1440 * i,
+                            Duration = p.Duration
+                        });
+                    }
             }
-            //List<DateTime> wDays = null;
-            //wDays = weekDays(new DateTime(2016, 12, 31), refTime);
+
 
             foreach (Block b in blocks)
             {
                 updateDuration(b);
             }
+        }
+
+        public static int linkedNonWorkingDays(int index, List<int> interval)
+        {
+
+            if (interval.Contains(index))
+            {
+                count++;
+                linkedNonWorkingDays(index + 1, interval);
+            }
+
+            return count;
         }
 
         public static void updateDuration(Block b)
@@ -239,14 +270,17 @@ namespace ResourceScheduler
             b.Duration = b.Duration - pauseTime;
         }
 
-        public static List<DateTime> weekDays(DateTime start, DateTime end)
+        public static List<int> weekDays(TimeSpan interval, DateTime end)
         {
-            List<DateTime> weekDays = new List<DateTime>();
-            while (start <= end)
+            List<int> weekDays = new List<int>();
+            int intervalDays = interval.Days;
+            int i = 0;
+            while (intervalDays >= i)
             {
                 if (end.DayOfWeek == DayOfWeek.Saturday || end.DayOfWeek == DayOfWeek.Sunday)
-                    weekDays.Add(end);
+                    weekDays.Add(i);
                 end = end.AddDays(-1);
+                i++;
             }
             return weekDays;
         }
