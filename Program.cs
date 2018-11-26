@@ -43,7 +43,7 @@ namespace ResourceScheduler
             {
                     int end = order.End.Value;
                     foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
-                        end = ScheduleOperation(operation, end + operation.TransportTime);
+                        end = ScheduleOperation(operation, end);
                     order.Start = end;
                     List<WorkOrder> subordinateOrders= orders.Where(x => x.ParentId == order.Id).ToList();
                         foreach (var wo in subordinateOrders)
@@ -129,8 +129,8 @@ namespace ResourceScheduler
                 block = blocks.Where(b =>
                 b.Valid == true &&
                 b.ResourceId == operation.ResourceId &&
-                b.Duration >= operation.Duration &&
-                b.Duration - (offset - b.End) >= operation.Duration &&
+                b.Duration >= operation.Duration + operation.TransportTime &&
+                b.Duration - (offset - b.End) >= operation.Duration + operation.TransportTime &&
                 b.Start >= offset).OrderBy(b => b.End).First();
 
             }
@@ -142,24 +142,27 @@ namespace ResourceScheduler
                 Console.ReadKey();
             }
 
-            Pause pause = pauses.Where(x => x.End < block.End && x.Start >= block.End).OrderBy(x => x.End).SingleOrDefault();
+            //offset += operation.TransportTime;
+
+            Pause pause = pauses.Where(x => x.End <= block.End && x.Start >= block.End).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
                 block.End = pause.Start;
 
-            pause = pauses.Where(x => x.End < offset && x.Start >= offset).OrderBy(x => x.End).SingleOrDefault();
+            pause = pauses.Where(x => x.End <= offset && x.Start >= offset).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
                 offset = pause.Start;
 
             int operationEnd = block.End > offset ? block.End : offset;
-            pause = pauses.Where(x => x.End < operationEnd && x.Start >= operationEnd).OrderBy(x => x.End).SingleOrDefault();
-            if (pause != null)
-                operationEnd = pause.Start + operation.TransportTime;
+            //pause = pauses.Where(x => x.End < operationEnd && x.Start >= operationEnd).OrderBy(x => x.End).SingleOrDefault();
+            //if (pause != null)
+            //    operationEnd = pause.Start + operation.TransportTime;
+
 
             int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationEnd + operation.Duration).Sum(x => x.Duration);
 
             int operationStart = operationEnd + operation.Duration + pauseTime;
 
-            pause = pauses.Where(x => x.End < operationStart && x.Start >= operationStart).OrderBy(x => x.End).SingleOrDefault();
+            pause = pauses.Where(x => x.End <= operationStart && x.Start >= operationStart).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
                 operationStart = operationStart + pause.Duration;
 
