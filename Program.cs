@@ -43,7 +43,7 @@ namespace ResourceScheduler
             {
                     int end = order.End.Value;
                     foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
-                        end = ScheduleOperation(operation, end);
+                        end = ScheduleOperation(operation, end + operation.TransportTime);
                     order.Start = end;
                     List<WorkOrder> subordinateOrders= orders.Where(x => x.ParentId == order.Id).ToList();
                         foreach (var wo in subordinateOrders)
@@ -130,7 +130,7 @@ namespace ResourceScheduler
                 b.Valid == true &&
                 b.ResourceId == operation.ResourceId &&
                 b.Duration >= operation.Duration &&
-                b.Duration - (offset - b.End) >= operation.Duration &&
+                b.Duration - (offset - b.End) >= operation.Duration  &&
                 b.Start >= offset).OrderBy(b => b.End).First();
 
             }
@@ -141,8 +141,7 @@ namespace ResourceScheduler
                     Console.WriteLine(b.Start.ToString() + "-" + b.End.ToString() + "-d:" + b.Duration);
                 Console.ReadKey();
             }
-
-            //offset += operation.TransportTime;
+            
 
             Pause pause = pauses.Where(x => x.End <= block.End && x.Start >= block.End).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
@@ -158,9 +157,16 @@ namespace ResourceScheduler
             //    operationEnd = pause.Start + operation.TransportTime;
 
 
-            int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationEnd + operation.Duration).Sum(x => x.Duration);
+            
 
-            int operationStart = operationEnd + operation.Duration + pauseTime;
+            int operationStart = operationEnd + operation.Duration;
+
+            pause = pauses.Where(x => x.End <= operationStart && x.Start >= operationStart).OrderBy(x => x.End).SingleOrDefault();
+            if (pause != null)
+                operationStart = operationStart + pause.Duration;
+            int pauseTime = pauses.Where(x => x.End >= operationEnd && x.Start <= operationStart).Sum(x => x.Duration);
+
+            operationStart = operationEnd + operation.Duration + pauseTime;
 
             pause = pauses.Where(x => x.End <= operationStart && x.Start >= operationStart).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
@@ -177,7 +183,7 @@ namespace ResourceScheduler
             }
             if (operationEnd > block.End)
             {
-                Block b = new Block() { ResourceId = block.ResourceId, Valid = true, Start = operationEnd, End = block.End, Duration = operationEnd - block.End };
+                Block b = new Block() { ResourceId = block.ResourceId, Valid = true, Start = operationEnd , End = block.End , Duration = operationEnd - block.End };
                 updateDuration(b);
                 blocks.Add(b);
             }
