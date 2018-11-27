@@ -233,16 +233,22 @@ namespace ResourceScheduler
 
             for (int i = 0; i < timeInterval.Days + 1; i++)
             {
-                //if (wDays.Contains(i))
-                //{
-                //    count = 0;
-                //    int countLinkedDays = linkedNonWorkingDays(i, wDays);
+                if (wDays.Contains(i))
+                {
+                    count = 0;
+                    int countLinkedDays = linkedNonWorkingDays(i, wDays);
+                    pauses.RemoveAt(pauses.Count - 1);
 
+                    pauses.Add(new Pause
+                    {
+                        Start = 1440 * (i + countLinkedDays) + 75,
+                        End = 1440 * i - 420,
+                        Duration = (1440 * (i + countLinkedDays) + 75) - (1440 * i- 420)
+                    });
 
-
-                //    i = i + countLinkedDays - 1;
-                //}
-                //else
+                    i = i + countLinkedDays - 1;
+                }
+                else
                     foreach (Pause p in dailyPauses)
                     {
                         pauses.Add(new Pause()
@@ -253,6 +259,12 @@ namespace ResourceScheduler
                         });
                     }
             }
+
+            //---------------------------------- ISPIS PAUZA -----------------------
+            //foreach(var p in pauses)
+            //{
+            //    Console.WriteLine(refTime.AddMinutes(-p.Start).ToString("dd.MM.yyyy HH:mm") + " - " + refTime.AddMinutes(-p.End).ToString("dd.MM.yyyy HH:mm") + "  Duration: "+p.Duration);
+            //}
 
 
             foreach (Block b in blocks)
@@ -281,6 +293,7 @@ namespace ResourceScheduler
 
         public static List<int> weekDays(TimeSpan interval, DateTime end)
         {
+            end = end.AddMinutes(-1);
             List<int> weekDays = new List<int>();
             int intervalDays = interval.Days;
             int i = 0;
