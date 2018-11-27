@@ -26,28 +26,43 @@ namespace ResourceScheduler
 
             DateTime startT = DateTime.Now;
 
-            orders[2].ParentId = 1; 
-            orders[3].ParentId = 1; 
+            orders[2].ParentId = 1;
+            orders[2].Level = 2;
+            orders[3].ParentId = 1;
+            orders[3].Level = 2;
             orders[4].ParentId = 3;
+            orders[4].Level = 3;
             orders[5].ParentId = 4;
+            orders[5].Level = 3;
             orders[6].ParentId = 2;
+            orders[6].Level = 2;
             orders[8].ParentId = 8;
+            orders[8].Level = 2;
             orders[9].ParentId = 9;
+            orders[9].Level = 3;
+            orders[10].ParentId = 10;
+            orders[10].Level = 4;
 
-            
-            foreach(var o in orders)
-            workOrderSchedule(o);
+            foreach(var order in orders)
+            {
+                foreach (var operation in order.Operations)
+                    operation.Level = order.Level;
+            }
+
+
+            foreach (var o in orders)
+                workOrderSchedule(o);
 
 
             foreach (var order in workOrdersSchedule)
             {
-                    int end = order.End.Value;
-                    foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
-                        end = ScheduleOperation(operation, end + operation.TransportTime);
-                    order.Start = end;
-                    List<WorkOrder> subordinateOrders= orders.Where(x => x.ParentId == order.Id).ToList();
-                        foreach (var wo in subordinateOrders)
-                        wo.End = order.Start;
+                int end = order.End.Value;
+                foreach (var operation in order.Operations.OrderByDescending(o => o.Id))
+                    end = ScheduleOperation(operation, end + operation.TransportTime);
+                order.Start = end;
+                List<WorkOrder> subordinateOrders = orders.Where(x => x.ParentId == order.Id).ToList();
+                foreach (var wo in subordinateOrders)
+                    wo.End = order.Start;
             }
             DateTime endT = DateTime.Now;
 
@@ -102,18 +117,18 @@ namespace ResourceScheduler
             //        workOrderSchedule(workOrders.First(), workOrders);
             //}
             #endregion
-            if(!workOrdersSchedule.Contains(workOrder))
-            workOrdersSchedule.Add(workOrder);
+            if (!workOrdersSchedule.Contains(workOrder))
+                workOrdersSchedule.Add(workOrder);
             List<WorkOrder> tmp = new List<WorkOrder>();
-            foreach (var wo in orders.Where(x=> x.ParentId == workOrder.Id).ToList())
+            foreach (var wo in orders.Where(x => x.ParentId == workOrder.Id).ToList())
             {
-                if(!workOrdersSchedule.Contains(wo))
+                if (!workOrdersSchedule.Contains(wo))
                 {
                     workOrdersSchedule.Add(wo);
                     tmp.Add(wo);
                 }
             }
-            foreach(var o in tmp)
+            foreach (var o in tmp)
             {
                 workOrderSchedule(o);
             }
@@ -130,7 +145,7 @@ namespace ResourceScheduler
                 b.Valid == true &&
                 b.ResourceId == operation.ResourceId &&
                 b.Duration >= operation.Duration &&
-                b.Duration - (offset - b.End) >= operation.Duration  &&
+                b.Duration - (offset - b.End) >= operation.Duration &&
                 b.Start >= offset).OrderBy(b => b.End).First();
 
             }
@@ -141,7 +156,7 @@ namespace ResourceScheduler
                     Console.WriteLine(b.Start.ToString() + "-" + b.End.ToString() + "-d:" + b.Duration);
                 Console.ReadKey();
             }
-            
+
 
             Pause pause = pauses.Where(x => x.End <= block.End && x.Start >= block.End).OrderBy(x => x.End).SingleOrDefault();
             if (pause != null)
@@ -157,7 +172,7 @@ namespace ResourceScheduler
             //    operationEnd = pause.Start + operation.TransportTime;
 
 
-            
+
 
             int operationStart = operationEnd + operation.Duration;
 
@@ -183,7 +198,7 @@ namespace ResourceScheduler
             }
             if (operationEnd > block.End)
             {
-                Block b = new Block() { ResourceId = block.ResourceId, Valid = true, Start = operationEnd , End = block.End , Duration = operationEnd - block.End };
+                Block b = new Block() { ResourceId = block.ResourceId, Valid = true, Start = operationEnd, End = block.End, Duration = operationEnd - block.End };
                 updateDuration(b);
                 blocks.Add(b);
             }
@@ -212,7 +227,7 @@ namespace ResourceScheduler
                     Resource res = resources[rand.Next(0, resourceCount - 1)];
                     operations.Add(new Operation() { Level = 1, WorkOrderId = i + 1, Id = j + 1, ResourceId = res.ResourceId, ResourceName = res.ResourceName, Duration = r.Next(1, 360), Start = null, End = null, TransportTime = 15 });
                 }
-                orders.Add(new WorkOrder() { Id = i + 1, Operations = operations, ParentId = null, End = r.Next(14400) });
+                orders.Add(new WorkOrder() { Id = i + 1, Operations = operations, ParentId = null, End = r.Next(14400), Level = 1 });
             }
 
             TimeSpan timeInterval = refTime - new DateTime(2016, 12, 31);
@@ -235,7 +250,7 @@ namespace ResourceScheduler
             List<int> nonWDays = null;
             nonWDays = nonwrkDays(nonWorkingDays, refTime);
 
-            foreach(var day in nonWDays)
+            foreach (var day in nonWDays)
             {
                 if (!wDays.Contains(day))
                     wDays.Add(day);
@@ -263,7 +278,7 @@ namespace ResourceScheduler
                     {
                         Start = 1440 * (i + countLinkedDays) + 75,
                         End = 1440 * i - 420,
-                        Duration = (1440 * (i + countLinkedDays) + 75) - (1440 * i- 420)
+                        Duration = (1440 * (i + countLinkedDays) + 75) - (1440 * i - 420)
                     });
 
                     i = i + countLinkedDays - 1;
@@ -280,10 +295,11 @@ namespace ResourceScheduler
                     }
             }
 
-            //---------------------------------- ISPIS PAUZA -----------------------
-            //foreach(var p in pauses)
+            //----------------------------------ISPIS PAUZA-----------------------
+
+            //foreach (var p in pauses)
             //{
-            //    Console.WriteLine(refTime.AddMinutes(-p.Start).ToString("dd.MM.yyyy HH:mm") + " - " + refTime.AddMinutes(-p.End).ToString("dd.MM.yyyy HH:mm") + "  Duration: "+p.Duration);
+            //    Console.WriteLine(refTime.AddMinutes(-p.Start).ToString("dd.MM.yyyy HH:mm") + " - " + refTime.AddMinutes(-p.End).ToString("dd.MM.yyyy HH:mm") + "  Duration: " + p.Duration);
             //}
 
 
@@ -331,7 +347,7 @@ namespace ResourceScheduler
         {
             refTime = refTime.AddMinutes(-1);
             List<int> nonWrkDays = new List<int>();
-            foreach(var nonWDay in nonWorkingDays)
+            foreach (var nonWDay in nonWorkingDays)
             {
                 TimeSpan ts = refTime - nonWDay;
                 nonWrkDays.Add(ts.Days);
