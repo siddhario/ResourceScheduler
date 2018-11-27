@@ -224,6 +224,26 @@ namespace ResourceScheduler
             List<int> wDays = null;
             wDays = weekDays(timeInterval, refTime);
 
+            //-------------------------NERADNI DANI------------------------
+
+            DateTime[] nonWorkingDays = new DateTime[]
+            {
+                new DateTime(2018,11,21),
+                new DateTime(2018,11,15),
+                new DateTime(2018,11,12)
+            };
+            List<int> nonWDays = null;
+            nonWDays = nonwrkDays(nonWorkingDays, refTime);
+
+            foreach(var day in nonWDays)
+            {
+                if (!wDays.Contains(day))
+                    wDays.Add(day);
+            }
+
+            wDays.Sort();
+
+            //-------------------------NERADNI DANI------------------------
 
             pauses.Add(new Pause() { Start = 75, End = 0, Duration = 75 });  // 00:00 - 22:45
             dailyPauses.Add(new Pause() { Start = 360, End = 330, Duration = 30 }); // 18:30 - 18:00
@@ -305,6 +325,19 @@ namespace ResourceScheduler
                 i++;
             }
             return weekDays;
+        }
+
+        public static List<int> nonwrkDays(DateTime[] nonWorkingDays, DateTime refTime)
+        {
+            refTime = refTime.AddMinutes(-1);
+            List<int> nonWrkDays = new List<int>();
+            foreach(var nonWDay in nonWorkingDays)
+            {
+                TimeSpan ts = refTime - nonWDay;
+                nonWrkDays.Add(ts.Days);
+            }
+
+            return nonWrkDays;
         }
 
 
